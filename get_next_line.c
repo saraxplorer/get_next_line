@@ -5,17 +5,19 @@
 /*                                                     +:+                    */
 /*   By: rshaheen <rshaheen@student.42.fr>            +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2024/01/20 21:50:56 by rshaheen      #+#    #+#                 */
-/*   Updated: 2024/01/22 19:05:38 by rshaheen      ########   odam.nl         */
+/*   Created: 2024/01/25 17:01:21 by rshaheen      #+#    #+#                 */
+/*   Updated: 2024/01/29 16:23:16 by rshaheen      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
 #include "get_next_line.h"
+
+char	*ft_free(char **pointer)
+{
+	free(*pointer);
+	*pointer = NULL;
+	return (NULL);
+}
 
 char	*read_concate(int fd, char *buffer, char *storage)
 {
@@ -26,17 +28,20 @@ char	*read_concate(int fd, char *buffer, char *storage)
 	while (read_result != 0)
 	{
 		read_result = read(fd, buffer, BUFFER_SIZE);
-		if (read_result == -1)
-			return (0);
+		if (read_result < 0)
+			return (NULL);
 		else if (read_result == 0)
 			break ;
 		buffer[read_result] = '\0';
 		if (!storage)
 			storage = ft_strdup("");
+		if (storage == NULL)
+			ft_free(&storage);
 		char_temp = storage;
 		storage = ft_strjoin(char_temp, buffer);
-		free(char_temp);
-		char_temp = NULL;
+		if (storage == NULL)
+			ft_free(&storage);
+		ft_free(&char_temp);
 		if (ft_strchr (buffer, '\n'))
 			break ;
 	}
@@ -52,13 +57,12 @@ char	*remaining_after_n(char *line)
 	while (line[count] != '\n' && line[count] != '\0')
 		count++;
 	if (line[count] == '\0')
-		return (0);
+		return (NULL);
 	remaining = ft_substr(line, count + 1, ft_strlen(line) - count);
-	if (remaining != NULL && *remaining == '\0')
-	{
-		free(remaining);
-		remaining = NULL;
-	}
+	if (remaining == NULL)
+		ft_free(&remaining);
+	if (remaining != NULL && remaining[0] == '\0')
+		ft_free(&remaining);
 	line[count + 1] = '\0';
 	return (remaining);
 }
@@ -71,20 +75,16 @@ char	*get_next_line(int fd)
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || read (fd, NULL, 0) == -1)
 	{
-		if (storage != 0)
-		{
-			free (storage);
-			storage = NULL;
-		}
-		return (0);
+		if (storage)
+			ft_free(&storage);
+		return (NULL);
 	}
 	buffer = (char *)malloc(BUFFER_SIZE + 1);
-	if (!buffer)
-		return (0);
+	if (buffer == NULL)
+		return (NULL);
 	line = read_concate(fd, buffer, storage);
-	free(buffer);
-	buffer = NULL;
-	if (!line)
+	ft_free(&buffer);
+	if (line == NULL)
 		return (NULL);
 	storage = remaining_after_n(line);
 	return (line);
@@ -97,40 +97,27 @@ char	*get_next_line(int fd)
 // 	int		fd1;
 // 	int		fd2;
 // 	int		fd3;
-// 	fd1 = open("example.txt", O_RDONLY);
+// 	//fd1 = open("example.txt", O_RDONLY);
 // 	fd2 = open("example1.txt", O_RDONLY);
-// 	fd3 = open("example2.txt", O_RDONLY);
+// 	//fd3 = open("example2.txt", O_RDONLY);
 // 	count = 1;
-// 	while (count < 2)
+// 	while (count < 3)
 // 	{
-// 		line = get_next_line(fd1);
+// 		// line = get_next_line(fd1);
+// 		// printf("line [%d]: %s", count, line);
+// 		// free(line);
+
+// 		line = get_next_line(fd2);
 // 		printf("line [%d]: %s", count, line);
 // 		free(line);
-// 		 if (line && line[strlen(line) - 1] == '\n') {
-//             printf(" - Includes newline character\n");
-//         } else {
-//             printf(" - Does not include newline character\n");
-//         }
-// 		line = get_next_line(fd2);
-// 		printf("line [%02d]: %s", count, line);
-// 		free(line);
-// 		if (line && line[strlen(line) - 1] == '\n') {
-//             printf(" - Includes newline character\n");
-//         } else {
-//             printf(" - Does not include newline character\n");
-//         }
-// 		line = get_next_line(fd3);
-// 		printf("line [%02d]: %s", count, line);
-// 		free(line);
-// 		if (line && line[strlen(line) - 1] == '\n') {
-//             printf(" - Includes newline character\n");
-//         } else {
-//             printf(" - Does not include newline character\n");
-//         }
+
+// 		// line = get_next_line(fd3);
+// 		// printf("line [%d]: %s", count, line);
+// 		// free(line);
 // 		count++;
 // 	}
-// 	close(fd1);
+// 	//close(fd1);
 // 	close(fd2);
-// 	close(fd3);
+// 	//close(fd3);
 // 	return (0);
 // }
